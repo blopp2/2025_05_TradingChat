@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TradingView Analyzer</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+        width: 300px;
+      }
+      textarea {
+        width: 100%;
+        height: 80px;
+        margin-top: 8px;
+      }
+      button {
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px;
+      }
+      #status {
+        display: none;
+        margin-top: 8px;
+      }
+      #result {
+        margin-top: 10px;
+        white-space: pre-wrap;
+      }
+    </style>
+    <script src="sidebar.js" defer></script>
+  </head>
+  <body>
+    <h1>Trading Analyzer</h1>
+
+    <button id="new-analysis-btn">📸 Neuer Screenshot aufnehmen</button>
+
+    <textarea id="question" placeholder="Frage stellen..."></textarea>
+    <div
+      id="screenshot-info"
+      style="margin-top: 6px; font-size: 12px; color: gray"
+    >
+      📸 Letzter Screenshot: <em>noch keiner</em>
+    </div>
+    <button id="ask-question-btn">❓ Frage stellen</button>
+
+    <div id="status">⏳ Bitte warten...</div>
+    <div id="result"></div>
+  </body>
+</html>
