@@ -1,0 +1,31 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "chartsnap-proxy",
+	"main": "src/index.js",
+	"compatibility_date": "2025-04-27",
+	"observability": {
+		"enabled": true
+	}
+
+	// (Komma hinter observability beachten!)
+
+	/**
+	 * Smart Placement
+	 */
+	// "placement": { "mode": "smart" },
+
+	/**
+	 * Bindings
+	 */
+	// "vars": { "MY_VARIABLE": "production_value" },
+
+	/**
+	 * Static Assets
+	 */
+	// "assets": { "directory": "./public/", "binding": "ASSETS" },
+
+	/**
+	 * Service Bindings
+	 */
+	// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
+}

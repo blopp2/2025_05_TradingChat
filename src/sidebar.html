@@ -1,50 +1,51 @@
+<!-- sidebar.html - neues professionelles Design -->
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>TradingView Analyzer</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        padding: 10px;
-        width: 300px;
-      }
-      textarea {
-        width: 100%;
-        height: 80px;
-        margin-top: 8px;
-      }
-      button {
-        width: 100%;
-        margin-top: 6px;
-        padding: 8px;
-      }
-      #status {
-        display: none;
-        margin-top: 8px;
-      }
-      #result {
-        margin-top: 10px;
-        white-space: pre-wrap;
-      }
-    </style>
-    <script src="sidebar.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SnapChart Analyzer</title>
+    <link rel="stylesheet" href="sidebar.css" />
   </head>
   <body>
-    <h1>Trading Analyzer</h1>
+    <div class="sidebar-container">
+      <main class="main-content">
+        <button id="new-analysis-btn" class="primary-btn">
+          📸 Neuer Screenshot aufnehmen
+        </button>
 
-    <button id="new-analysis-btn">📸 Neuer Screenshot aufnehmen</button>
+        <div class="divider"></div>
 
-    <textarea id="question" placeholder="Frage stellen..."></textarea>
-    <div
-      id="screenshot-info"
-      style="margin-top: 6px; font-size: 12px; color: gray"
-    >
-      📸 Letzter Screenshot: <em>noch keiner</em>
+        <div class="screenshot-info" id="screenshot-info">
+          📋 Letzter Screenshot:
+          <span class="screenshot-time">noch keiner</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div id="result" class="result-display"></div>
+      </main>
+
+      <div class="divider"></div>
+
+      <header class="header">
+        <img
+          src="../icons/snapchart_branding.png"
+          alt="SnapChart Logo"
+          class="logo"
+        />
+      </header>
+
+      <footer class="footer">
+        <div class="footer-text">Made with ❤️ by BrightCompass</div>
+        <div class="disclaimer-text">
+          Disclaimer: No financial advice. Always do your own research.
+        </div>
+      </footer>
+
+      <div id="status" class="status-indicator">⌛️ Verarbeitung läuft...</div>
     </div>
-    <button id="ask-question-btn">❓ Frage stellen</button>
 
-    <div id="status">⏳ Bitte warten...</div>
-    <div id="result"></div>
+    <script src="sidebar.js"></script>
   </body>
 </html>

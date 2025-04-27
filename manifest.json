@@ -3,13 +3,7 @@
   "name": "Universal Chart Analyzer",
   "description": "KI-gestützte Chartanalyse direkt in TradingView.",
   "version": "1.0.0",
-  "permissions": [
-    "storage",
-    "tabs",
-    "activeTab",
-    "tabCapture",
-    "sidePanel"
-  ],
+  "permissions": ["storage", "tabs", "activeTab", "tabCapture", "sidePanel"],
   "host_permissions": [
     "*://*/*",
     "https://api.openai.com/*",
@@ -18,6 +12,9 @@
   "background": {
     "service_worker": "src/background.js",
     "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "connect-src https://chartsnap-proxy.brightcompass.workers.dev https://api.openai.com; script-src 'self'; object-src 'self';"
   },
   "action": {
     "default_icon": {
