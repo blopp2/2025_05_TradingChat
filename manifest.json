@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "TradingView Analyzer",
+  "name": "Universal Chart Analyzer",
   "description": "KI-gestützte Chartanalyse direkt in TradingView.",
   "version": "1.0.0",
   "permissions": [
@@ -11,6 +11,7 @@
     "sidePanel"
   ],
   "host_permissions": [
+    "*://*/*",
     "https://api.openai.com/*",
     "*://*.tradingview.com/*"
   ],
@@ -30,14 +31,6 @@
   "side_panel": {
     "default_path": "src/sidebar.html"
   },
-  "content_scripts": [
-    {
-      "matches": ["*://*.tradingview.com/*"],
-      "js": ["src/content_script.js"],
-      "run_at": "document_idle",
-      "all_frames": true
-    }
-  ],
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

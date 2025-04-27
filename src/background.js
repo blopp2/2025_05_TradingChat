@@ -14,12 +14,32 @@
 // 1  Konstanten & State
 // -----------------------------------------------------------------------------
 
-const SYSTEM_PROMPT =
-`Du erhältst aufeinanderfolgende Screenshots von Handelscharts (1h, 4h, evtl. Tages‑Chart). Grüne Pfeile sind eingegangene Long-Position, rote pfeile eingegangene short-position.\n
-Kurze prägnante Antworten!\n'
-// Deine Aufgabe:\n Candlestick‑Muster\n   • Entscheidungsrelevante Indikatoren (RSI, MACD, gleitende Durchschnitte)\n2. Handlungsempfehlung für Long und short (Einstieg/Exit, Stop‑Loss, Take‑Profit, Risiko)\n3. Präsentation: max. 3 Bulletpoints, priorisierte Aktionsliste (1 Sofort / 2 Beobachten), Warnhinweise deutlich.`
+const SYSTEM_PROMPT = `You receive screenshots of trading charts (1h, 4h, daily). Green arrows indicate filled long positions, red arrows indicate filled short positions.
 
-const MAX_HISTORY = 3;           // + System‑Prompt  → ~6 Nachrichten pro Call
+Reply in ENGLISH using EXACTLY this layout, max 12 words per line.
+
+1. Recommendation
+   • Long: <entry price>
+   • SL:   <stop-loss>
+   • TP:   <take-profit>
+
+2. Trend Outlook
+   • Continuation: <percent> %
+   • ⚠️ Reversal: <percent> % – <max 5-word warning>
+
+3. Rationale
+   • <reason 1> (max 3 words)
+   • <reason 2> (max 3 words)
+
+Rules
+• Use these lines and bullet indentation exactly—no extra lines.
+• NO bold/italics; only the ⚠️ emoji in the Reversal line.
+• Continuation % + Reversal % must total 100 % (choose 50, 75, 90).
+• If no trade setup, replace “Long/SL/TP” with “No action”,
+  Continuation/Reversal with “n/a”, and Rationale with “n/a”.
+• Do not add introductions, explanations, or blank lines outside this block.`;
+
+const MAX_HISTORY = 3; // + System‑Prompt  → ~6 Nachrichten pro Call
 const chatHistories = new Map(); // key = tabId, value = Array<ChatMessage>
 
 console.log("🔧 Service‑Worker initialisiert");
@@ -35,9 +55,14 @@ function captureTradingViewChart() {
       { format: "jpeg", quality: 85 },
       (dataUrl) => {
         if (chrome.runtime.lastError) {
-          return reject(new Error(`Screenshot fehlgeschlagen: ${chrome.runtime.lastError.message}`));
+          return reject(
+            new Error(
+              `Screenshot fehlgeschlagen: ${chrome.runtime.lastError.message}`
+            )
+          );
         }
-        if (!dataUrl) return reject(new Error("Keine Screenshot‑Daten erhalten"));
+        if (!dataUrl)
+          return reject(new Error("Keine Screenshot‑Daten erhalten"));
         resolve(dataUrl);
       }
     );
@@ -124,8 +149,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       async analyzeChart() {
         const screenshotUrl = await captureTradingViewChart();
         const answer = await queryOpenAI(tabId, [
-          { type: "text",  text: "Bitte analysiere diesen TradingView‑Chart:" },
-          { type: "image_url", image_url: { url: screenshotUrl, detail: "high" } },
+          { type: "text", text: "Bitte analysiere diesen TradingView‑Chart:" },
+          {
+            type: "image_url",
+            image_url: { url: screenshotUrl, detail: "high" },
+          },
         ]);
         return { analysis: answer };
       },
@@ -133,8 +161,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       async askQuestion() {
         const text = request.text?.trim();
         if (!text) throw new Error("Frage ist leer");
-        const compactPrompt = SYSTEM_PROMPT + "\\nAntwortformat: Maximal 2 kurze Sätze, keine Wiederholungen.";
-        const answer = await queryOpenAI(tabId, [{ type: "text", text }], { systemPrompt: compactPrompt, maxTokens: 200 });
+        const compactPrompt =
+          SYSTEM_PROMPT +
+          "\\nAntwortformat: Maximal 2 kurze Sätze, keine Wiederholungen.";
+        const answer = await queryOpenAI(tabId, [{ type: "text", text }], {
+          systemPrompt: compactPrompt,
+          maxTokens: 200,
+        });
         return { answer };
       },
 
@@ -166,9 +199,9 @@ chrome.action.onClicked.addListener((tab) => {
   if (!tab?.id) return;
 
   // Panel synchron öffnen (User‑Gesture)
-  chrome.sidePanel.open({ tabId: tab.id }).catch((err) =>
-    console.error("Side‑Panel öffnen fehlgeschlagen", err)
-  );
+  chrome.sidePanel
+    .open({ tabId: tab.id })
+    .catch((err) => console.error("Side‑Panel öffnen fehlgeschlagen", err));
 
   // Optionen nachreichen
   chrome.sidePanel.setOptions({
@@ -183,7 +216,9 @@ chrome.action.onClicked.addListener((tab) => {
 // -----------------------------------------------------------------------------
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && /tradingview\.com/.test(tab.url)) {
-    chrome.sidePanel.setOptions({ tabId, enabled: true, path: "src/sidebar.html" }).catch(() => {});
+  if (changeInfo.status === "complete") {
+    chrome.sidePanel
+      .setOptions({ tabId, enabled: true, path: "src/sidebar.html" })
+      .catch(() => {});
   }
 });
