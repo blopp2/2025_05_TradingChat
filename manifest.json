@@ -1,18 +1,22 @@
 {
   "manifest_version": 3,
   "name": "TradingView Analyzer",
-  "version": "1.0",
+  "description": "KI-gestützte Chartanalyse direkt in TradingView.",
+  "version": "1.0.0",
   "permissions": [
     "storage",
+    "tabs",
     "activeTab",
-    "scripting",
-    "sidePanel",
     "tabCapture",
-    "activeTab"
+    "sidePanel"
   ],
-  "host_permissions": ["https://api.openai.com/*", "*://*.tradingview.com/*"],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "*://*.tradingview.com/*"
+  ],
   "background": {
-    "service_worker": "src/background.js"
+    "service_worker": "src/background.js",
+    "type": "module"
   },
   "action": {
     "default_icon": {
@@ -20,7 +24,8 @@
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
-    }
+    },
+    "default_title": "TradingView Analyzer"
   },
   "side_panel": {
     "default_path": "src/sidebar.html"
@@ -29,8 +34,8 @@
     {
       "matches": ["*://*.tradingview.com/*"],
       "js": ["src/content_script.js"],
-      "all_frames": true,
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true
     }
   ],
   "icons": {
