@@ -14,7 +14,7 @@
     "type": "module"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://chartsnap-proxy.brightcompass.workers.dev https://api.openai.com"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src https://snapchart-proxy.brightcompass.workers.dev https://api.openai.com https://firebase.googleapis.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://*.firebaseio.com"
   },
   "action": {
     "default_icon": {

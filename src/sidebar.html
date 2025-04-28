@@ -6,37 +6,68 @@
     <title>SnapChart Analyzer</title>
     <link rel="stylesheet" href="sidebar.css" />
 
-    <!-- Firebase SDK -->
-    <script src="/lib/firebase-app-compat.js"></script>
-    <script src="/lib/firebase-auth-compat.js"></script>
+    <!-- Firebase SDKs -->
+    <script src="lib/firebase-app-compat.js" defer></script>
+    <script src="lib/firebase-auth-compat.js" defer></script>
 
-    <!-- Auth-Logik laden -->
-    <script src="auth.js"></script>
-    <!-- <<< muss eingebunden sein! -->
+    <!-- Authentication logic -->
+    <script src="auth.js" defer></script>
+
+    <!-- Firebase Safe-Check -->
+    <script src="firebase-check.js" defer></script>
+
+    <!-- Main sidebar logic -->
+    <script src="modal.js" defer></script>
+    <script src="sidebar.js" defer></script>
   </head>
 
   <body>
     <div class="sidebar-container">
       <main class="main-content">
         <button id="new-analysis-btn" class="primary-btn">
-          📸 Neuer Screenshot aufnehmen
+          📸 Capture New Screenshot
         </button>
 
         <div class="divider"></div>
 
         <div id="screenshot-info" class="screenshot-info">
-          📋 Letzter Screenshot: <span id="screenshot-time">noch keiner</span>
+          📋 Last Screenshot: <span id="screenshot-time">none yet</span>
         </div>
 
         <div class="divider"></div>
 
         <div id="result" class="result-display"></div>
+
+        <div class="divider"></div>
+
+        <div id="auth-section" class="auth-section">
+          <button id="login-btn" class="auth-btn">🔐 Login</button>
+        </div>
       </main>
 
       <div class="divider"></div>
 
-      <div id="auth-section" class="auth-section">
-        <button id="login-btn" class="auth-btn">🔐 Login</button>
+      <!-- Auth Modal -->
+      <div id="auth-modal" class="auth-modal hidden">
+        <div class="auth-modal-content">
+          <span id="auth-modal-close" class="close">&times;</span>
+          <h2 id="auth-modal-title">Login</h2>
+
+          <input type="email" id="auth-email" placeholder="Email" required />
+          <input
+            type="password"
+            id="auth-password"
+            placeholder="Password"
+            required
+          />
+
+          <button id="auth-submit-btn" class="primary-btn">Submit</button>
+          <div id="auth-toggle" class="auth-toggle">
+            ➡️ Need an account? <a href="#" id="switch-to-signup">Sign up</a>
+          </div>
+
+          <div id="auth-error" class="auth-error"></div>
+        </div>
       </div>
 
       <header class="header">
@@ -47,6 +78,8 @@
         />
       </header>
 
+      <div class="divider"></div>
+
       <footer class="footer">
         <div class="footer-text">Made with ❤️ by BrightCompass</div>
         <div class="disclaimer-text">
@@ -55,11 +88,8 @@
       </footer>
 
       <div id="status" class="status-indicator" style="display: none">
-        ⌛️ Verarbeitung läuft...
+        ⌛️ Processing...
       </div>
     </div>
-
-    <!-- WICHTIG: sidebar.js ganz am Ende laden -->
-    <script src="sidebar.js"></script>
   </body>
 </html>

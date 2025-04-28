@@ -1,61 +1,71 @@
-// auth.js – Extension-Seite (Browser)
+// auth.js – Extension (SnapChart)
 
-// 🛡️ Firebase Projekt Konfiguration einfügen
+// 🛡️ Firebase Projekt Konfiguration
 const firebaseConfig = {
-  apiKey: "DEIN_FIREBASE_API_KEY",
-  authDomain: "DEIN_PROJECT_ID.firebaseapp.com",
-  projectId: "DEIN_PROJECT_ID",
-  storageBucket: "DEIN_PROJECT_ID.appspot.com",
-  messagingSenderId: "DEIN_SENDER_ID",
-  appId: "DEIN_APP_ID",
+  apiKey: "AIzaSyAVfTqsFyNjaZwCEmnVWHIRUkPy_C6O1ws",
+  authDomain: "snapchart-21fa7.firebaseapp.com",
+  projectId: "snapchart-21fa7",
+  storageBucket: "snapchart-21fa7.appspot.com", // 🛠️ Fix hier!
+  messagingSenderId: "182191314631",
+  appId: "1:182191314631:web:3d960001200dc65e5fd0e2",
 };
 
 // 🔥 Firebase initialisieren
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// ✅ Hole das aktuelle ID-Token
+// ✅ Token holen (aktuell eingeloggter User)
 async function getAuthToken() {
   const user = auth.currentUser;
-  if (user) {
-    const token = await user.getIdToken();
-    console.log("✅ Firebase Token geholt:", token);
-    return token;
-  } else {
-    console.warn("🚪 Kein eingeloggter User gefunden beim Token holen");
-    throw new Error("Nicht eingeloggt");
+  if (!user) {
+    console.warn("🚪 No user logged in when fetching token");
+    throw new Error("User not logged in");
   }
+  const token = await user.getIdToken();
+  console.log("✅ Firebase token retrieved:", token);
+  return token;
 }
 
-// 🧩 Optional: Manuelles Login
+// 🔐 Login-Funktion
 async function login(email, password) {
   try {
     await auth.signInWithEmailAndPassword(email, password);
-    console.log("✅ Erfolgreich eingeloggt:", email);
+    console.log("✅ Successfully logged in:", email);
   } catch (error) {
-    console.error("❌ Login-Fehler:", error.message);
+    console.error("❌ Login error:", error.message);
     throw error;
   }
 }
 
-// 🧹 Optional: Logout-Funktion
+// 🚪 Logout-Funktion
 async function logout() {
   try {
     await auth.signOut();
-    console.log("🚪 Erfolgreich ausgeloggt");
+    console.log("🚪 Successfully logged out");
   } catch (error) {
-    console.error("❌ Logout-Fehler:", error.message);
+    console.error("❌ Logout error:", error.message);
     throw error;
   }
 }
 
-// 📣 Auth-State-Überwachung (kannst du später schön für UI nutzen)
+// 🔄 Auth-State Change Listener
 auth.onAuthStateChanged((user) => {
   if (user) {
-    console.log("✅ Eingeloggt als:", user.email);
-    // TODO: Hier könntest du z.B. UI-Update triggern
+    console.log("✅ Logged in as:", user.email);
+    // Optional: Update UI (e.g., show "Logout" button)
   } else {
-    console.log("🚪 Kein Benutzer eingeloggt");
-    // TODO: Hier könntest du z.B. Login-Button anzeigen
+    console.log("🚪 No user logged in");
+    // Optional: Update UI (e.g., show "Login" button)
   }
 });
+
+// ➕ Registrierung
+async function signup(email, password) {
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    console.log("✅ Registrierung erfolgreich:", email);
+  } catch (error) {
+    console.error("❌ Registrierung-Fehler:", error.message);
+    throw error;
+  }
+}

@@ -51,3 +51,12 @@ pre {
   border-radius: 5px;
   overflow-x: auto;
 }
+.auth-error {
+  background: #ffe4e6;
+  color: #b91c1c;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  margin: 10px 0;
+}

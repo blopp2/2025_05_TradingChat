@@ -4,22 +4,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const newAnalysisBtn = document.getElementById("new-analysis-btn");
   const screenshotInfo = document.getElementById("screenshot-info");
   const resultEl = document.getElementById("result");
-  const loginBtn = document.getElementById("login-btn"); // ← Button fürs Login/Logout
+  const loginBtn = document.getElementById("login-btn"); // Login/Logout Button
 
-  // 📸 Screenshot-Button
+  // 📸 Screenshot aufnehmen
   newAnalysisBtn.addEventListener("click", async () => {
+    if (typeof auth === "undefined" || !auth.currentUser) {
+      alert("❌ Please login before using SnapChart!");
+      return;
+    }
+
     const originalButtonText = newAnalysisBtn.innerHTML;
 
     try {
-      newAnalysisBtn.innerHTML = "⌛️ Verarbeitung läuft...";
+      newAnalysisBtn.innerHTML = "⌛ Processing...";
       newAnalysisBtn.disabled = true;
       resultEl.innerHTML = "";
 
-      const idToken = await getAuthToken(); // ← Firebase ID-Token holen
+      const idToken = await getAuthToken(); // Firebase ID-Token holen
 
       const response = await chrome.runtime.sendMessage({
         action: "analyzeChart",
-        idToken: idToken, // ← ID-Token mitsenden
+        idToken: idToken,
       });
 
       if (response?.analysis) {
@@ -30,9 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
           response.error
         )}</div>`;
       } else {
-        resultEl.innerHTML = `<div class="error">❌ Unbekannter Fehler</div>`;
+        resultEl.innerHTML = `<div class="error">❌ Unknown error</div>`;
       }
     } catch (error) {
+      console.error("❌ Error:", error.message);
       resultEl.innerHTML = `<div class="error">❌ ${escapeHtml(
         error.message
       )}</div>`;
@@ -42,41 +48,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // 🔐 Login/Logout-Button
+  // 🔐 Login/Logout Button
   loginBtn.addEventListener("click", async () => {
     try {
       if (auth.currentUser) {
         await logout();
       } else {
-        const email = prompt("E-Mail eingeben:");
-        const password = prompt("Passwort eingeben:");
-        if (email && password) {
-          await login(email, password);
-        }
+        openLoginModal(); // Modernes Login-Modal statt prompt()
       }
     } catch (error) {
-      console.error("❌ Auth Fehler:", error.message);
-      alert("Anmeldung fehlgeschlagen: " + error.message);
+      console.error("❌ Auth error:", error.message);
+      alert("Authentication failed: " + error.message);
     }
   });
 
-  // 🔄 Dynamischer Button-Text je nach Login-Status
+  // 🔄 Login-Status aktualisieren
   auth.onAuthStateChanged((user) => {
-    if (user) {
-      loginBtn.textContent = "🚪 Logout";
-    } else {
-      loginBtn.textContent = "🔐 Login";
-    }
+    loginBtn.textContent = user ? "🚪 Logout" : "🔐 Login";
   });
 
   // 🛠 Hilfsfunktionen
   function updateScreenshotTime() {
     const now = new Date();
-    screenshotInfo.innerHTML = `📋 Letzter Screenshot: ${now.toLocaleString()}`;
+    screenshotInfo.innerHTML = `📋 Last Screenshot: ${now.toLocaleString()}`;
   }
 
   function formatResponse(text) {
-    if (typeof text !== "string") return "Ungültige Antwort";
+    if (typeof text !== "string") return "Invalid response";
     return `<div class="response" style="white-space: pre-line;">${escapeHtml(
       text
     )}</div>`;

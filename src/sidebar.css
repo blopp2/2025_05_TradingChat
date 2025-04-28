@@ -177,4 +177,152 @@ body {
   .auth-btn:hover {
     background-color: #2563eb;
   }
+  /* Modal Basics */
+  .auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .auth-modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+    position: relative;
+  }
+
+  .auth-modal input {
+    width: 90%;
+    margin: 10px 0;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .auth-modal .primary-btn {
+    margin-top: 10px;
+    width: 100%;
+  }
+
+  .auth-toggle {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  .auth-error {
+    margin-top: 8px;
+    color: red;
+    font-size: 12px;
+  }
+
+  .close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  .hidden {
+    display: none;
+  }
+  /* --- Auth Modal --- */
+  .auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(4px);
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .auth-modal.hidden {
+    display: none;
+  }
+
+  .auth-modal-content {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: relative;
+    text-align: center;
+  }
+
+  .auth-modal-content h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .auth-modal-content input {
+    width: 100%;
+    padding: 0.8rem;
+    margin: 0.5rem 0;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  .primary-btn,
+  .auth-btn {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 1rem;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .primary-btn:hover,
+  .auth-btn:hover {
+    background-color: #45a049;
+  }
+
+  .auth-toggle {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .auth-toggle a {
+    color: #007bff;
+    text-decoration: none;
+  }
+
+  .auth-toggle a:hover {
+    text-decoration: underline;
+  }
+
+  .auth-error {
+    color: red;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+
+  .close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    font-size: 1.8rem;
+    color: #333;
+    cursor: pointer;
+  }
 }
