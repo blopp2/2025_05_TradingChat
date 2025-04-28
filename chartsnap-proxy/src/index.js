@@ -41,7 +41,7 @@ export default {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					model: 'gpt-4.1-mini', // Dein gewünschtes Modell!
+					model: 'gpt-4.1', // Dein gewünschtes Modell!
 					messages,
 					max_tokens: 1500,
 					temperature: 0.2,
