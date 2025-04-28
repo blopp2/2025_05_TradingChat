@@ -40,7 +40,7 @@ function captureTradingViewChart() {
 // 3  Kommunikation mit Worker (Proxy)
 // -----------------------------------------------------------------------------
 
-async function queryProxy(tabId, contentFragments) {
+async function queryProxy(tabId, contentFragments, idToken) {
   const hasImage = contentFragments.some((c) => c.type === "image_url");
   const action = hasImage ? "analyze" : "ask";
 
@@ -54,17 +54,15 @@ async function queryProxy(tabId, contentFragments) {
   console.log("📤 Sende Request an Proxy:", bodyPayload);
 
   try {
-    const res = await fetch(
-      "https://snapchart-proxy.brightcompass.workers.dev",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bodyPayload), // WICHTIG: Stringify!
-        signal: AbortSignal.timeout(30000),
-      }
-    );
+    const res = await fetch(PROXY_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}), // 🛡 Token anhängen wenn vorhanden
+      },
+      body: JSON.stringify(bodyPayload),
+      signal: AbortSignal.timeout(30000),
+    });
 
     if (!res.ok) {
       const errorResponse = await res.text();
@@ -111,20 +109,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const handlers = {
       async analyzeChart() {
         const screenshotUrl = await captureTradingViewChart();
-        const answer = await queryProxy(tabId, [
-          { type: "text", text: "Bitte analysiere diesen TradingView-Chart:" },
-          {
-            type: "image_url",
-            image_url: { url: screenshotUrl, detail: "high" },
-          },
-        ]);
+        const answer = await queryProxy(
+          tabId,
+          [
+            {
+              type: "text",
+              text: "Bitte analysiere diesen TradingView-Chart:",
+            },
+            {
+              type: "image_url",
+              image_url: { url: screenshotUrl, detail: "high" },
+            },
+          ],
+          request.idToken
+        ); // <<< idToken übergeben
         return { analysis: answer };
       },
 
       async askQuestion() {
         const text = request.text?.trim();
         if (!text) throw new Error("Frage ist leer");
-        const answer = await queryProxy(tabId, [{ type: "text", text }]);
+        const answer = await queryProxy(
+          tabId,
+          [{ type: "text", text }],
+          request.idToken
+        ); // <<< idToken übergeben
         return { answer };
       },
 
@@ -177,6 +186,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   ) {
     chrome.sidePanel
       .setOptions({ tabId, enabled: true, path: "src/sidebar.html" })
-      .catch(() => {});
+      .catch((err) =>
+        console.error("❌ Fehler beim SidePanel setzen:", err.message)
+      );
   }
 });

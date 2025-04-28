@@ -1,4 +1,3 @@
-<!-- sidebar.html - neues professionelles Design -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -6,7 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SnapChart Analyzer</title>
     <link rel="stylesheet" href="sidebar.css" />
+
+    <!-- Firebase SDK -->
+    <script src="/lib/firebase-app-compat.js"></script>
+    <script src="/lib/firebase-auth-compat.js"></script>
+
+    <!-- Auth-Logik laden -->
+    <script src="auth.js"></script>
+    <!-- <<< muss eingebunden sein! -->
   </head>
+
   <body>
     <div class="sidebar-container">
       <main class="main-content">
@@ -16,9 +24,8 @@
 
         <div class="divider"></div>
 
-        <div class="screenshot-info" id="screenshot-info">
-          📋 Letzter Screenshot:
-          <span class="screenshot-time">noch keiner</span>
+        <div id="screenshot-info" class="screenshot-info">
+          📋 Letzter Screenshot: <span id="screenshot-time">noch keiner</span>
         </div>
 
         <div class="divider"></div>
@@ -43,9 +50,12 @@
         </div>
       </footer>
 
-      <div id="status" class="status-indicator">⌛️ Verarbeitung läuft...</div>
+      <div id="status" class="status-indicator" style="display: none">
+        ⌛️ Verarbeitung läuft...
+      </div>
     </div>
 
+    <!-- WICHTIG: sidebar.js ganz am Ende laden -->
     <script src="sidebar.js"></script>
   </body>
 </html>

@@ -13,8 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
       newAnalysisBtn.disabled = true;
       resultEl.innerHTML = "";
 
+      const idToken = await getAuthToken(); // <<< hier Firebase ID-Token holen!
+
       const response = await chrome.runtime.sendMessage({
         action: "analyzeChart",
+        idToken: idToken, // <<< neu: ID-Token mitsenden
       });
 
       if (response?.analysis) {

@@ -5,27 +5,12 @@
 	"compatibility_date": "2025-04-27",
 	"observability": {
 		"enabled": true
+	},
+
+	// Environment Variables
+	"vars": {
+		"FIREBASE_PROJECT_ID": "snapchart-21fa7"
 	}
 
-	// (Komma hinter observability beachten!)
-
-	/**
-	 * Smart Placement
-	 */
-	// "placement": { "mode": "smart" },
-
-	/**
-	 * Bindings
-	 */
-	// "vars": { "MY_VARIABLE": "production_value" },
-
-	/**
-	 * Static Assets
-	 */
-	// "assets": { "directory": "./public/", "binding": "ASSETS" },
-
-	/**
-	 * Service Bindings
-	 */
-	// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
+	// (Weitere Section-Bindings, Services, Assets etc. nach Bedarf hinzufügen)
 }

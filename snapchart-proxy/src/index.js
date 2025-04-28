@@ -1,3 +1,5 @@
+import { verifyFirebaseIdToken } from './auth.js';
+
 export default {
 	async fetch(request, env, ctx) {
 		try {
@@ -5,11 +7,27 @@ export default {
 				return new Response('Only POST requests are allowed', { status: 405 });
 			}
 
+			// --- Authentication ---
+			const authHeader = request.headers.get('Authorization') || '';
+			if (!authHeader.startsWith('Bearer ')) {
+				return new Response('Unauthorized: Missing or invalid token', { status: 401 });
+			}
+			const idToken = authHeader.replace('Bearer ', '');
+			try {
+				// Verify Firebase ID token against your project ID
+				await verifyFirebaseIdToken(idToken, env.FIREBASE_PROJECT_ID);
+			} catch (authError) {
+				console.error('Token validation failed:', authError.message);
+				return new Response('Unauthorized: Invalid token', { status: 401 });
+			}
+
+			// --- Parse Request Body ---
 			const { action, dataUrl, text } = await request.json().catch(() => ({}));
 			if (!action || (!dataUrl && !text)) {
 				return new Response('Invalid request body', { status: 400 });
 			}
 
+			// --- Build Messages for OpenAI ---
 			const messages = [
 				{
 					role: 'system',
@@ -26,14 +44,12 @@ export default {
 					],
 				});
 			} else if (action === 'ask' && text) {
-				messages.push({
-					role: 'user',
-					content: [{ type: 'text', text }],
-				});
+				messages.push({ role: 'user', content: [{ type: 'text', text }] });
 			} else {
 				return new Response('Unsupported action', { status: 400 });
 			}
 
+			// --- Call OpenAI API ---
 			const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
 				method: 'POST',
 				headers: {
@@ -41,7 +57,7 @@ export default {
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify({
-					model: 'gpt-4.1', // Dein gewünschtes Modell!
+					model: 'gpt-4.1',
 					messages,
 					max_tokens: 1500,
 					temperature: 0.2,
@@ -56,7 +72,6 @@ export default {
 
 			const openaiResult = await openaiResponse.json();
 			const content = openaiResult.choices?.[0]?.message?.content || '';
-
 			if (!content) {
 				return new Response('OpenAI response was empty', { status: 502 });
 			}
