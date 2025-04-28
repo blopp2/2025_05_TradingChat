@@ -157,4 +157,24 @@ body {
     margin: 2px 0;
     font-size: 13px;
   }
+
+  .auth-section {
+    text-align: center;
+    padding: 10px;
+  }
+
+  .auth-btn {
+    background-color: #1d4ed8; /* Blau */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+  }
+
+  .auth-btn:hover {
+    background-color: #2563eb;
+  }
 }
