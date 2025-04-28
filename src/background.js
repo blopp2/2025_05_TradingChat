@@ -7,7 +7,7 @@ console.log("🔧 Service‑Worker initialisiert");
 // 1  Konstanten
 // -----------------------------------------------------------------------------
 
-const PROXY_ENDPOINT = "https://chartsnap-proxy.brightcompass.workers.dev";
+const PROXY_ENDPOINT = "https://snapchart-proxy.brightcompass.workers.dev";
 const MAX_HISTORY = 3;
 const chatHistories = new Map(); // key = tabId, value = Array<ChatMessage>
 
@@ -55,7 +55,7 @@ async function queryProxy(tabId, contentFragments) {
 
   try {
     const res = await fetch(
-      "https://chartsnap-proxy.brightcompass.workers.dev",
+      "https://snapchart-proxy.brightcompass.workers.dev",
       {
         method: "POST",
         headers: {

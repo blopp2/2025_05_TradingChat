@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "chartsnap-proxy",
+	"name": "snapchart-proxy",
 	"main": "src/index.js",
 	"compatibility_date": "2025-04-27",
 	"observability": {
