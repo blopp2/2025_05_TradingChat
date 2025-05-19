@@ -1,65 +1,88 @@
-// auth.js – Firebase ID-Token Validation for Cloudflare Worker
+// auth.js – Firebase ID-Token Validation & Session Token via Cloudflare KV
 
 /**
- * Verifies a Firebase ID token.
- * @param {string} idToken - The Firebase ID token from the client.
- * @param {string} expectedAudience - Your Firebase project ID (aud claim).
- * @returns {Promise<object>} - The decoded token payload if valid.
- * @throws {Error} - If validation fails.
+ * ✅ Verifies a Firebase ID token using public JWKS (RSA).
+ * @param {string} idToken - Firebase ID token (JWT)
+ * @param {string} expectedAudience - Firebase project ID
+ * @returns {Promise<object>} Decoded token payload
+ * @throws {Error} If validation fails
  */
 export async function verifyFirebaseIdToken(idToken, expectedAudience) {
-	// 1. Split token
 	const parts = idToken.split('.');
-	if (parts.length !== 3) {
-		throw new Error('Invalid token format');
-	}
+	if (parts.length !== 3) throw new Error('Invalid token format');
+
 	const [headerB64, payloadB64, signatureB64] = parts;
 
-	// 2. Decode payload
-	const payloadJson = atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'));
-	const payload = JSON.parse(payloadJson);
+	const decodeB64 = (b64) => atob(b64.replace(/-/g, '+').replace(/_/g, '/'));
+	const parseJson = (b64) => JSON.parse(decodeB64(b64));
 
-	// 3. Check expiration
+	const header = parseJson(headerB64);
+	const payload = parseJson(payloadB64);
+	const signature = Uint8Array.from(decodeB64(signatureB64), (c) => c.charCodeAt(0));
+
 	const now = Math.floor(Date.now() / 1000);
-	if (typeof payload.exp !== 'number' || payload.exp < now) {
-		throw new Error('Token expired');
+	if (!payload.exp || payload.exp < now) throw new Error('Token expired');
+	if (payload.aud !== expectedAudience) throw new Error('Invalid audience');
+	if (payload.iss !== `https://securetoken.google.com/${expectedAudience}`) {
+		throw new Error('Invalid issuer');
 	}
 
-	// 4. Check audience and issuer
-	if (payload.aud !== expectedAudience) {
-		throw new Error('Invalid token audience');
-	}
-	const expectedIssuer = `https://securetoken.google.com/${expectedAudience}`;
-	if (payload.iss !== expectedIssuer) {
-		throw new Error('Invalid token issuer');
-	}
-
-	// 5. Fetch Firebase public keys
 	const jwksUrl = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 	const jwksRes = await fetch(jwksUrl);
+	if (!jwksRes.ok) throw new Error('Failed to fetch JWKS');
+
 	const jwks = await jwksRes.json();
-
-	// 6. Find key by kid
-	const headerJson = atob(headerB64.replace(/-/g, '+').replace(/_/g, '/'));
-	const header = JSON.parse(headerJson);
 	const jwk = jwks.keys.find((k) => k.kid === header.kid);
-	if (!jwk) {
-		throw new Error('Public key not found');
-	}
+	if (!jwk) throw new Error('Matching public key not found');
 
-	// 7. Import the public key
-	const cryptoKey = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+	const cryptoKey = await crypto.subtle.importKey(
+		'jwk',
+		jwk,
+		{
+			name: 'RSASSA-PKCS1-v1_5',
+			hash: 'SHA-256',
+		},
+		false,
+		['verify']
+	);
 
-	// 8. Verify signature
 	const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-	const signature = Uint8Array.from(atob(signatureB64.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
-	const valid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, data);
-	if (!valid) {
-		throw new Error('Invalid token signature');
-	}
+	const isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', cryptoKey, signature, data);
+	if (!isValid) throw new Error('Invalid token signature');
 
-	// 9. Return decoded payload
 	return payload;
 }
 
-// Helper: atob is available in Workers
+/**
+ * ✅ Generates and stores a session token in Cloudflare KV.
+ * @param {string} uid - Unique user ID
+ * @param {any} env - Env containing SESSION_STORE
+ * @returns {Promise<string>} - sessionToken
+ */
+export async function createSessionToken(uid, env) {
+	const token = crypto.randomUUID();
+	await env.SESSION_STORE.put(token, JSON.stringify({ uid }), {
+		expirationTtl: 86400, // 24 h
+	});
+	return token;
+}
+
+/**
+ * ✅ Verifies a session token from Cloudflare KV.
+ * @param {string} token
+ * @param {any} env - Env containing SESSION_STORE
+ * @returns {Promise<string>} - UID of authenticated user
+ * @throws {Error} - If token is missing, corrupt or invalid
+ */
+export async function verifySessionToken(token, env) {
+	const session = await env.SESSION_STORE.get(token);
+	if (!session) throw new Error('Invalid session token');
+
+	try {
+		const { uid } = JSON.parse(session);
+		if (!uid) throw new Error('No UID found');
+		return uid;
+	} catch {
+		throw new Error('Corrupt session data');
+	}
+}

@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Universal Chart Analyzer",
+  "name": "SnapChart - Analyzer",
   "description": "KI-gestützte Chartanalyse direkt in TradingView.",
   "version": "1.0.0",
   "permissions": ["storage", "tabs", "activeTab", "tabCapture", "sidePanel"],

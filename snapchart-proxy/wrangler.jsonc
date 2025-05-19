@@ -6,11 +6,13 @@
 	"observability": {
 		"enabled": true
 	},
-
-	// Environment Variables
+	"kv_namespaces": [
+		{
+			"binding": "SESSION_STORE",
+			"id": "35a113c67c334c5ba31a358299fc471a"
+		}
+	],
 	"vars": {
 		"FIREBASE_PROJECT_ID": "snapchart-21fa7"
 	}
-
-	// (Weitere Section-Bindings, Services, Assets etc. nach Bedarf hinzufügen)
 }
