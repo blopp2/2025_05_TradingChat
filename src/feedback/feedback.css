@@ -1,39 +1,71 @@
-/* feedback.css */
+/* feedback/feedback.css */
 .feedback-modal {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
 }
+
 .feedback-modal.hidden {
   display: none;
 }
+
 .feedback-modal-content {
   background: #fff;
-  padding: 16px;
-  border-radius: 8px;
-  width: 280px;
+  border-radius: 16px;
+  padding: 2rem 1.5rem 1.2rem 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  min-width: 320px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   position: relative;
 }
-.feedback-modal-content .close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  cursor: pointer;
-  font-size: 1.2rem;
+
+.feedback-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
 }
-.feedback-modal-content textarea {
+
+.feedback-text {
   width: 100%;
-  height: 100px;
-  padding: 8px;
-  margin: 8px 0;
+  min-height: 80px;
+  max-height: 180px;
+  font-size: 1rem;
+  padding: 0.6rem 0.7rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 5px;
+  margin-bottom: 1.1rem;
   resize: vertical;
+}
+
+#feedback-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+#feedback-close:hover {
+  color: #222;
 }

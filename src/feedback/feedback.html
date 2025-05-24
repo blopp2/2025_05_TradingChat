@@ -1,14 +1,14 @@
-<!-- src/components/feedback.html -->
-<div id="auth-modal" class="auth-modal hidden">
-  <div class="auth-modal-content">
-    <span id="auth-modal-close" class="close">&times;</span>
-    <h2 id="auth-modal-title">Login</h2>
-    <input type="email" id="auth-email" placeholder="Email" required />
-    <input type="password" id="auth-password" placeholder="Password" required />
-    <button id="auth-submit-btn" class="primary-btn">Submit</button>
-    <div id="auth-toggle" class="auth-toggle">
-      ➡️ Need an account? <a href="#" id="switch-to-signup">Sign up</a>
-    </div>
-    <div id="auth-error" class="auth-error"></div>
+<div id="feedback-modal" class="feedback-modal hidden">
+  <div class="feedback-modal-content">
+    <button id="feedback-close" class="close">&times;</button>
+    <h2 class="feedback-title"><span>✉️</span> Send us your Feedback</h2>
+    <textarea
+      id="feedback-text"
+      class="feedback-text"
+      maxlength="500"
+      placeholder="What’s on your mind? Any suggestions, issues, or praise?"
+    ></textarea>
+    <button id="feedback-submit-btn" class="primary-btn">Send Feedback</button>
+    <div id="feedback-error" class="auth-error"></div>
   </div>
 </div>
