@@ -1,7 +1,9 @@
 /* src/styles.css */
 body,
 html {
-  width: 320px;
+  width: 420px; /* vorher: 320px */
+  min-width: 320px;
+  max-width: 500px; /* optional: für Obergrenze */
   min-height: 340px;
   margin: 0;
   font-family: Arial, sans-serif;

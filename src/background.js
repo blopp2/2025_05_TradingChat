@@ -25,12 +25,11 @@ function captureTradingViewChart() {
         if (chrome.runtime.lastError) {
           return reject(
             new Error(
-              `Screenshot fehlgeschlagen: ${chrome.runtime.lastError.message}`
+              `not a valid chart URL: ${chrome.runtime.lastError.message}`
             )
           );
         }
-        if (!dataUrl)
-          return reject(new Error("Keine Screenshot-Daten erhalten"));
+        if (!dataUrl) return reject(new Error("No Data recieved"));
         resolve(dataUrl);
       }
     );
@@ -80,19 +79,19 @@ async function queryProxy(tabId, contentFragments, sessionToken) {
     if (!res.ok) {
       const errorResponse = await res.text();
       console.error(
-        "❌ Proxy-Fehler: HTTP Status",
+        "❌ Proxy-Error: HTTP Status",
         res.status,
         "-",
         errorResponse
       );
-      throw new Error(`Proxy-Fehler: ${res.status}`);
+      throw new Error(`Proxy-Error: ${res.status}`);
     }
 
     const jsonData = await res.json();
-    console.log("✅ Proxy-Antwort erhalten:", jsonData);
+    console.log("✅ Proxy-Feedback:", jsonData);
 
     if (!jsonData.answer) {
-      throw new Error("Proxy-Antwort leer oder unvollständig.");
+      throw new Error("Proxy-Feedback empty.");
     }
 
     return jsonData.answer;
@@ -101,8 +100,8 @@ async function queryProxy(tabId, contentFragments, sessionToken) {
     if (error.message === "SESSION_EXPIRED") {
       throw error; // UI kann dann gezielt re-login auslösen
     }
-    console.error("❌ Proxy-Request fehlgeschlagen:", error.message);
-    throw new Error("Proxy-Anfrage fehlgeschlagen");
+    console.error("❌ Proxy-Request failed:", error.message);
+    throw new Error("Proxy-Anfrage failed");
   }
 }
 
@@ -162,7 +161,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const fn = handlers[request.action];
     if (!fn) {
-      sendResponse({ error: "Unbekannte Aktion" });
+      sendResponse({ error: "Unknown Action" });
       return false;
     }
 
