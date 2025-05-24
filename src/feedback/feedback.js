@@ -1,5 +1,5 @@
 // feedback.js
-import { getSessionToken, isLoggedIn } from "./auth.js";
+import { getSessionToken, isLoggedIn } from "../auth.js";
 
 const PROXY = "https://snapchart-proxy.brightcompass.workers.dev";
 

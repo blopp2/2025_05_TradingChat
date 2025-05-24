@@ -1,5 +1,6 @@
 import { logout, getSessionToken, isLoggedIn } from "./auth.js";
 import { openLoginModal, closeLoginModal } from "./modal.js";
+import { openFeedbackModal } from "./feedback/feedbackModal.js";
 
 const PROXY_ENDPOINT = "https://snapchart-proxy.brightcompass.workers.dev";
 
@@ -18,7 +19,7 @@ function sendMessage(message) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  // ─── Grab all the elements ────────────────────────────────────────────
+  // UI-Elemente holen
   const userEmailEl = document.getElementById("user-email");
   const docLinkEl = document.getElementById("doc-link");
   const feedbackBtn = document.getElementById("feedback-btn");
@@ -33,12 +34,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let countdownInterval = null;
 
-  // ─── Initialization ─────────────────────────────────────────────────
+  // --- Initial UI & State ---
   updateAuthUI();
   updateUserUI();
   loadUsage();
 
-  // After login/signup
+  // --- Session update after login/signup ---
   window.addEventListener("sessionStarted", () => {
     closeLoginModal();
     updateAuthUI();
@@ -46,7 +47,7 @@ window.addEventListener("DOMContentLoaded", () => {
     loadUsage();
   });
 
-  // ─── Logout ─────────────────────────────────────────────────────────
+  // --- Logout ---
   logoutBtn.addEventListener("click", () => {
     logout();
     openLoginModal();
@@ -54,11 +55,12 @@ window.addEventListener("DOMContentLoaded", () => {
     updateUserUI();
   });
 
-  // ─── Analyze Button ─────────────────────────────────────────────────
+  // --- Analyze Chart Button ---
   newAnalysisBtn.addEventListener("click", async () => {
     newAnalysisBtn.disabled = true;
     updateStatus("Analyzing…");
     resultEl.innerHTML = "";
+
     try {
       const token = getSessionToken();
       const resp = await sendMessage({
@@ -88,21 +90,25 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ─── Donate Button ──────────────────────────────────────────────────
+  // --- Donate Button ---
   donateBtn.addEventListener("click", showDonateDialog);
 
-  // ─── Feedback Button opens in-page modal ────────────────────────────
+  // --- Feedback Button: Show Modal Overlay ---
   feedbackBtn.addEventListener("click", () => {
     if (!isLoggedIn()) {
-      return alert("Please log in to send feedback.");
+      alert("Please log in to send feedback.");
+      return;
     }
-    feedbackModal.classList.remove("hidden");
+    openFeedbackModal();
   });
+
+  // --- Feedback Modal: Close ---
   feedbackClose.addEventListener("click", () => {
     feedbackModal.classList.add("hidden");
   });
 
-  // ─── Helpers ────────────────────────────────────────────────────────
+  // --- Helper Functions ---
+
   function updateUserUI() {
     const email = localStorage.getItem("userEmail");
     if (email) {
