@@ -1,8 +1,21 @@
 import { logout, getSessionToken, isLoggedIn } from "./auth.js";
 import { openLoginModal, closeLoginModal } from "./modal.js";
 
-// Proxy Endpoint
 const PROXY_ENDPOINT = "https://snapchart-proxy.brightcompass.workers.dev";
+
+/**
+ * Wrap chrome.runtime.sendMessage in a Promise
+ */
+function sendMessage(message) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(message, (response) => {
+      if (chrome.runtime.lastError) {
+        return reject(new Error(chrome.runtime.lastError.message));
+      }
+      resolve(response);
+    });
+  });
+}
 
 window.addEventListener("DOMContentLoaded", () => {
   const newAnalysisBtn = document.getElementById("new-analysis-btn");
@@ -11,75 +24,49 @@ window.addEventListener("DOMContentLoaded", () => {
   const logoutBtn = document.getElementById("logout-btn");
   const donateBtn = document.getElementById("donate-btn");
   const status = document.getElementById("status");
-  const usageInfoEl = document.getElementById("usage-info");
-  const remainingCountEl = document.getElementById("remaining-count");
+
+  let countdownInterval = null;
 
   // Initial UI & Usage laden
   updateAuthUI();
   loadUsage();
 
-  // Wenn das Panel wieder sichtbar wird → Usage neu laden
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      loadUsage();
-    }
-  });
-
-  // Nach Login/Signup Usage neu holen
-  window.addEventListener("sessionStarted", () => {
-    // Modal schließen
+  document.addEventListener("sessionStarted", () => {
     closeLoginModal();
-    // UI und Usage updaten
     updateAuthUI();
     loadUsage();
   });
 
-  // Logout
   logoutBtn.addEventListener("click", () => {
     logout();
     openLoginModal();
     updateAuthUI();
   });
 
-  // Analyse starten
   newAnalysisBtn.addEventListener("click", async () => {
     newAnalysisBtn.disabled = true;
     updateStatus("Analyzing...");
+    // Nur hier löschen, nicht in loadUsage
     resultEl.innerHTML = "";
+
     try {
       const token = getSessionToken();
-      const response = await chrome.runtime.sendMessage({
+      const response = await sendMessage({
         action: "analyzeChart",
         sessionToken: token,
       });
 
-      // Session-Expired?
       if (response?.sessionExpired || response?.error === "SESSION_EXPIRED") {
         showSessionExpired();
         return;
       }
 
-      // Erfolg
       if (response?.analysis) {
         resultEl.innerHTML = formatResponse(response.analysis);
         updateScreenshotTime();
-      }
-      // Limit erreicht
-      else if (response?.error?.includes("limit reached")) {
-        resultEl.innerHTML = `
-          <div class="error">
-            ❌ You've used all your free analyses.<br/>
-            <button id="donate-now" class="secondary-btn">
-              Buy more analyses
-            </button>
-          </div>
-        `;
-        document
-          .getElementById("donate-now")
-          .addEventListener("click", showDonateDialog);
-      }
-      // anderer Fehler
-      else if (response?.error) {
+      } else if (response?.error?.includes("limit reached")) {
+        showError("❌ You've used all your free analyses.");
+      } else if (response?.error) {
         showError(response.error);
       } else {
         showError("Unknown error");
@@ -92,16 +79,13 @@ window.addEventListener("DOMContentLoaded", () => {
       showError(err.message || "Proxy-Anfrage fehlgeschlagen");
     } finally {
       clearStatus();
-      newAnalysisBtn.disabled = false;
-      // ➤ sofortiger Reload nach jeder Analyse
-      await loadUsage();
+      await loadUsage(); // Button-Text updaten
     }
   });
 
-  // Donate
   donateBtn.addEventListener("click", showDonateDialog);
 
-  // ─── Hilfsfunktionen ────────────────────────────────────────────────
+  // ─── Funktionen ───────────────────────────────────────────────────
 
   function updateAuthUI() {
     if (!isLoggedIn()) {
@@ -124,8 +108,8 @@ window.addEventListener("DOMContentLoaded", () => {
     screenshotInfo.textContent = `📋 Last Screenshot: ${now.toLocaleString()}`;
   }
 
-  function updateStatus(message) {
-    status.textContent = `⌛️ ${message}`;
+  function updateStatus(msg) {
+    status.textContent = `⌛️ ${msg}`;
     status.style.display = "block";
   }
 
@@ -134,7 +118,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function showError(msg) {
-    resultEl.innerHTML = `<div class="error">❌ ${escapeHtml(msg)}</div>`;
+    resultEl.innerHTML = `<div class="error">${msg}</div>`;
   }
 
   function formatResponse(text) {
@@ -142,7 +126,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   function escapeHtml(str) {
-    if (!str) return "";
     return str
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -155,13 +138,46 @@ window.addEventListener("DOMContentLoaded", () => {
     window.open("https://buymeacoffee.com/brightcompass", "_blank");
   }
 
-  async function loadUsage() {
-    // UI zurücksetzen
-    usageInfoEl.style.display = "none";
-    remainingCountEl.textContent = "–";
+  /**
+   * Live-Countdown im Button starten (grau, disabled)
+   */
+  function startButtonCountdown(waitMs) {
+    clearInterval(countdownInterval);
+    let remaining = waitMs;
     newAnalysisBtn.disabled = true;
 
-    if (!isLoggedIn()) return;
+    countdownInterval = setInterval(() => {
+      remaining -= 1000;
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        resetAnalysisButton();
+        loadUsage();
+      } else {
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        newAnalysisBtn.textContent = `Next in ${mins}m ${secs}s`;
+      }
+    }, 1000);
+  }
+
+  function resetAnalysisButton() {
+    newAnalysisBtn.disabled = false;
+    newAnalysisBtn.textContent = "Analyze this chart";
+  }
+
+  /**
+   * Lädt Usage und aktualisiert den Button-Text oder startet den Countdown
+   */
+  async function loadUsage() {
+    clearStatus();
+    // Button in Lade-Zustand
+    newAnalysisBtn.disabled = true;
+    newAnalysisBtn.textContent = "Loading…";
+
+    if (!isLoggedIn()) {
+      newAnalysisBtn.textContent = "Analyze this chart";
+      return;
+    }
 
     try {
       const token = getSessionToken();
@@ -177,26 +193,15 @@ window.addEventListener("DOMContentLoaded", () => {
       const { analysesRemaining, waitMs } = await res.json();
 
       if (analysesRemaining > 0) {
-        remainingCountEl.textContent = analysesRemaining;
         newAnalysisBtn.disabled = false;
-        usageInfoEl.style.display = "block";
+        newAnalysisBtn.textContent = `Analyze this chart (${analysesRemaining} left)`;
       } else {
-        // Button deaktiviert, Null anzeigen
-        remainingCountEl.textContent = "0";
-        newAnalysisBtn.disabled = true;
-
-        // Wartezeit in h/m
-        const minutes = Math.ceil(waitMs / 60000);
-        const hrs = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        const waitText =
-          (hrs > 0 ? hrs + "h " : "") + (mins > 0 ? mins + "m" : "");
-
-        usageInfoEl.textContent = `Next reset in ${waitText || "0m"}`;
-        usageInfoEl.style.display = "block";
+        startButtonCountdown(waitMs);
       }
     } catch {
-      remainingCountEl.textContent = "–";
+      // Fallback
+      newAnalysisBtn.disabled = false;
+      newAnalysisBtn.textContent = "Analyze this chart";
     }
   }
 });

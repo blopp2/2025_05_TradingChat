@@ -1,4 +1,3 @@
-/* src/sidebar.css */
 :root {
   --primary-color: #28a745;
   --secondary-color: #6c757d;
@@ -11,21 +10,21 @@ html,
 body {
   margin: 0;
   padding: 0;
-  width: 320px;
+  width: 100%;
+  min-width: 320px;
+  max-width: 420px;
   min-height: 100vh;
   font-family: Arial, sans-serif;
   color: var(--text-color);
   background-color: #ffffff;
 }
 
-/* Container & Layout */
 .sidebar-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
 
-/* Sticky Header */
 .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -38,7 +37,6 @@ body {
   z-index: 10;
 }
 
-/* Logo and Title */
 .logo-container {
   display: flex;
   align-items: center;
@@ -62,14 +60,12 @@ body {
   cursor: pointer;
 }
 
-/* Main Scrollable Area */
 .main-content {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 12px;
 }
 
-/* Cards */
 .card {
   background-color: var(--background-card);
   border-radius: var(--border-radius);
@@ -77,16 +73,15 @@ body {
   margin-bottom: 12px;
 }
 
-.control-card {
+.control-card,
+.result-card {
   padding: 12px;
 }
 
 .result-card {
-  padding: 12px;
   word-break: break-word;
 }
 
-/* Buttons */
 .primary-btn {
   background-color: var(--primary-color);
   color: #ffffff;
@@ -95,10 +90,6 @@ body {
   padding: 10px;
   font-size: 1rem;
   cursor: pointer;
-  width: 100%;
-}
-
-.wide-btn {
   width: 100%;
 }
 
@@ -113,7 +104,6 @@ body {
   flex: 1;
 }
 
-/* Footer */
 .sidebar-footer {
   padding: 8px 12px;
   background-color: #fafafa;
@@ -125,7 +115,6 @@ body {
   box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Status Indicator */
 .status-indicator {
   position: fixed;
   top: 50%;
@@ -139,7 +128,6 @@ body {
   z-index: 20;
 }
 
-/* Error Message */
 .error {
   color: #b91c1c;
   font-weight: bold;
@@ -149,7 +137,6 @@ body {
   margin: 12px 0;
 }
 
-/* Response formatting: preserve original line breaks and spacing */
 .response {
   white-space: pre-wrap;
   line-height: 1.5;
@@ -157,13 +144,20 @@ body {
   margin: 8px 0;
 }
 
-/* Screenshot Info */
 .screenshot-info {
   margin-top: 8px;
   font-size: 0.9rem;
 }
 
-/* Auth Modal (unchanged) */
+/* Neuer Block für den Zähler */
+#usage-info {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+/* Modal */
 .auth-modal {
   position: fixed;
   top: 0;
@@ -175,19 +169,16 @@ body {
   align-items: center;
   justify-content: center;
 }
-
 .auth-modal-content {
-  background: #ffffff;
+  background: #fff;
   padding: 16px;
   border-radius: var(--border-radius);
   width: 280px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-
 .auth-modal.hidden {
   display: none;
 }
-
 .auth-modal-content input {
   width: 100%;
   padding: 8px;
@@ -195,11 +186,9 @@ body {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .auth-modal-content .primary-btn {
   margin-top: 8px;
 }
-
 .auth-error {
   background: #ffe4e6;
   color: #b91c1c;
@@ -208,7 +197,6 @@ body {
   text-align: center;
   margin-top: 8px;
 }
-
 .close {
   position: absolute;
   top: 12px;
@@ -216,4 +204,12 @@ body {
   cursor: pointer;
   font-size: 1.2rem;
   color: #333;
+}
+
+/* alle disabled Buttons grau darstellen */
+button:disabled {
+  opacity: 0.6;
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
 }

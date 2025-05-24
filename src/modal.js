@@ -43,7 +43,7 @@ function setupModal() {
 }
 
 /**
- * Klick-Handler für den Submit-Button (Login oder Signup).
+ * Klick-Handler für Login/Signup.
  */
 async function handleAuthSubmit() {
   const email = authEmail.value.trim();
@@ -64,9 +64,9 @@ async function handleAuthSubmit() {
       await signup(email, password);
     }
 
-    // Sobald erfolgreich: Modal schließen und UI benachrichtigen
-    closeLoginModal();
+    // Informiere UI und schließe Modal
     window.dispatchEvent(new Event("sessionStarted"));
+    closeLoginModal();
   } catch (err) {
     console.error("Auth Error:", err.message);
     authError.textContent = "❌ " + (err.message || "Authentication failed.");
@@ -76,21 +76,21 @@ async function handleAuthSubmit() {
 }
 
 /**
- * Klick-Handler für den Link, um zwischen Login und Signup zu wechseln.
+ * Klick-Handler, um zwischen Login und Signup umzuschalten.
  */
 function handleAuthToggle(event) {
-  const targetId = event.target.id;
-  if (targetId === "switch-to-signup") {
+  const id = event.target.id;
+  if (id === "switch-to-signup") {
     mode = "signup";
     resetModal();
-  } else if (targetId === "switch-to-login") {
+  } else if (id === "switch-to-login") {
     mode = "login";
     resetModal();
   }
 }
 
 /**
- * Setzt das Modal zurück auf den aktuellen Modus (Login oder Signup).
+ * Setzt das Modal zurück auf den aktuellen Modus.
  */
 function resetModal() {
   authEmail.value = "";
