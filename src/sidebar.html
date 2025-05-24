@@ -3,93 +3,101 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SnapChart Analyzer</title>
+    <title>SnapChart - Chart Analyzer</title>
     <link rel="stylesheet" href="sidebar.css" />
-
-    <!-- Firebase SDKs -->
-    <script src="lib/firebase-app-compat.js" defer></script>
-    <script src="lib/firebase-auth-compat.js" defer></script>
-
-    <!-- Authentication logic -->
-    <script src="auth.js" defer></script>
-
-    <!-- Firebase Safe-Check -->
-    <script src="firebase-check.js" defer></script>
-
-    <!-- Main sidebar logic -->
-    <script src="modal.js" defer></script>
-    <script src="sidebar.js" defer></script>
+    <link rel="stylesheet" href="feedback.css" />
+    <script type="module" src="sidebar.js"></script>
+    <script type="module" src="feedback.js"></script>
   </head>
 
   <body>
     <div class="sidebar-container">
+      <!-- Sticky Header -->
+      <header class="sidebar-header">
+        <div class="logo-container">
+          <img
+            src="../icons/snapchart_branding.png"
+            alt="SnapChart Logo"
+            class="logo"
+          />
+          <span class="app-title">SnapChart - Chart Analyzer</span>
+        </div>
+        <div class="user-container">
+          <span id="user-email" class="user-email"></span>
+          <a
+            id="doc-link"
+            class="doc-link"
+            href="https://snapchart.pages.dev"
+            target="_blank"
+            title="Documentation"
+            >📖</a
+          >
+          <button id="logout-btn" class="auth-btn">🚪 Logout</button>
+        </div>
+      </header>
+
+      <!-- Main Content -->
       <main class="main-content">
-        <button id="new-analysis-btn" class="primary-btn">
-          📸 Capture New Screenshot
-        </button>
-
-        <div class="divider"></div>
-
-        <div id="screenshot-info" class="screenshot-info">
-          📋 Last Screenshot: <span id="screenshot-time">none yet</span>
+        <!-- Control Card -->
+        <div class="card control-card">
+          <button id="new-analysis-btn" class="primary-btn wide-btn">
+            Analyze this chart
+          </button>
+          <div id="screenshot-info" class="screenshot-info">
+            📋 Last Screenshot:
+            <span id="screenshot-time">none yet</span>
+          </div>
         </div>
 
-        <div class="divider"></div>
-
-        <div id="result" class="result-display"></div>
-
-        <div class="divider"></div>
-
-        <div id="auth-section" class="auth-section">
-          <button id="login-btn" class="auth-btn">🔐 Login</button>
+        <!-- Result Display -->
+        <div id="result" class="card result-card">
+          <!-- AI analysis will appear here -->
         </div>
       </main>
 
-      <div class="divider"></div>
-
-      <!-- Auth Modal -->
-      <div id="auth-modal" class="auth-modal hidden">
-        <div class="auth-modal-content">
-          <span id="auth-modal-close" class="close">&times;</span>
-          <h2 id="auth-modal-title">Login</h2>
-
-          <input type="email" id="auth-email" placeholder="Email" required />
-          <input
-            type="password"
-            id="auth-password"
-            placeholder="Password"
-            required
-          />
-
-          <button id="auth-submit-btn" class="primary-btn">Submit</button>
-          <div id="auth-toggle" class="auth-toggle">
-            ➡️ Need an account? <a href="#" id="switch-to-signup">Sign up</a>
-          </div>
-
-          <div id="auth-error" class="auth-error"></div>
-        </div>
-      </div>
-
-      <header class="header">
-        <img
-          src="../icons/snapchart_branding.png"
-          alt="SnapChart Logo"
-          class="logo"
-        />
-      </header>
-
-      <div class="divider"></div>
-
-      <footer class="footer">
-        <div class="footer-text">Made with ❤️ by BrightCompass</div>
-        <div class="disclaimer-text">
-          Disclaimer: No financial advice. Always do your own research.
-        </div>
+      <!-- Sticky Footer -->
+      <footer class="sidebar-footer">
+        <button id="donate-btn" class="secondary-btn">🧡☕ Donate</button>
+        <button id="feedback-btn" class="secondary-btn">✉️ Feedback</button>
       </footer>
+    </div>
 
-      <div id="status" class="status-indicator" style="display: none">
-        ⌛️ Processing...
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="auth-modal hidden">
+      <div class="auth-modal-content">
+        <span id="auth-modal-close" class="close">&times;</span>
+        <h2 id="auth-modal-title">Login</h2>
+
+        <input type="email" id="auth-email" placeholder="Email" required />
+        <input
+          type="password"
+          id="auth-password"
+          placeholder="Password"
+          required
+        />
+
+        <button id="auth-submit-btn" class="primary-btn">Submit</button>
+        <div id="auth-toggle" class="auth-toggle">
+          ➡️ Need an account?
+          <a href="#" id="switch-to-signup">Sign up</a>
+        </div>
+        <div id="auth-error" class="auth-error"></div>
       </div>
     </div>
+
+    <!-- Feedback Overlay -->
+    <div id="feedback-container" class="feedback-container hidden">
+      <div class="feedback-content">
+        <button id="feedback-close" class="close">&times;</button>
+        <iframe
+          src="feedback.html"
+          title="Send Feedback"
+          class="feedback-iframe"
+        ></iframe>
+      </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div id="status" class="status-indicator hidden">⌛️ Processing...</div>
   </body>
 </html>

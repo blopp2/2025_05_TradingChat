@@ -1,0 +1,39 @@
+/* feedback.css */
+.feedback-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.feedback-modal.hidden {
+  display: none;
+}
+.feedback-modal-content {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  width: 280px;
+  position: relative;
+}
+.feedback-modal-content .close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+.feedback-modal-content textarea {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}

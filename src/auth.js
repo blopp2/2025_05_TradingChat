@@ -1,71 +1,127 @@
-// auth.js – Extension (SnapChart)
+// auth.js – SnapChart Extension Frontend Auth via Proxy
 
-// 🛡️ Firebase Projekt Konfiguration
-const firebaseConfig = {
-  apiKey: "AIzaSyAVfTqsFyNjaZwCEmnVWHIRUkPy_C6O1ws",
-  authDomain: "snapchart-21fa7.firebaseapp.com",
-  projectId: "snapchart-21fa7",
-  storageBucket: "snapchart-21fa7.appspot.com", // 🛠️ Fix hier!
-  messagingSenderId: "182191314631",
-  appId: "1:182191314631:web:3d960001200dc65e5fd0e2",
-};
+const API_BASE = "https://snapchart-proxy.brightcompass.workers.dev";
+const SESSION_KEY = "sessionToken";
 
-// 🔥 Firebase initialisieren
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-// ✅ Token holen (aktuell eingeloggter User)
-async function getAuthToken() {
-  const user = auth.currentUser;
-  if (!user) {
-    console.warn("🚪 No user logged in when fetching token");
-    throw new Error("User not logged in");
+/**
+ * Sendet eine JSON-Anfrage an den Proxy und wertet die Antwort aus.
+ * @param {string} path  Endpunktpfad, z.B. "/login" oder "/signup"
+ * @param {Object} body  Request-Body
+ * @returns {Promise<Object>} Parsed JSON
+ * @throws {Error} bei Netzwerk- oder API-Fehlern
+ */
+async function requestJson(path, body) {
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (networkErr) {
+    throw new Error(`Netzwerkfehler: ${networkErr.message}`);
   }
-  const token = await user.getIdToken();
-  console.log("✅ Firebase token retrieved:", token);
+
+  const text = await res.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error("Ungültige JSON-Antwort vom Server");
+  }
+
+  if (!res.ok) {
+    const msg = data.error || data.message || "Anfrage fehlgeschlagen";
+    throw new Error(msg);
+  }
+
+  return data;
+}
+
+/**
+ * Login – sendet Login-Credentials an den Proxy und speichert das Session-Token.
+ * @param {string} email
+ * @param {string} password
+ * @throws {Error} bei Fehlern
+ */
+export async function login(email, password) {
+  try {
+    const { sessionToken } = await requestJson("/login", { email, password });
+    if (!sessionToken) {
+      throw new Error("Kein Session-Token erhalten");
+    }
+    localStorage.setItem(SESSION_KEY, sessionToken);
+    localStorage.setItem("userEmail", email);
+    window.dispatchEvent(new Event("sessionStarted"));
+    console.log("✅ Login erfolgreich");
+  } catch (err) {
+    clearSessionToken();
+    window.dispatchEvent(new Event("sessionEnded"));
+    console.error("❌ Login-Fehler:", err.message);
+    throw err;
+  }
+}
+
+/**
+ * Signup – registriert den Benutzer via Proxy und speichert das Session-Token.
+ * @param {string} email
+ * @param {string} password
+ * @throws {Error} bei Fehlern
+ */
+export async function signup(email, password) {
+  try {
+    const { sessionToken } = await requestJson("/signup", { email, password });
+    if (!sessionToken) {
+      throw new Error("Kein Session-Token erhalten");
+    }
+    localStorage.setItem(SESSION_KEY, sessionToken);
+    localStorage.setItem("userEmail", email);
+    window.dispatchEvent(new Event("sessionStarted"));
+    console.log("✅ Registrierung erfolgreich");
+  } catch (err) {
+    clearSessionToken();
+    window.dispatchEvent(new Event("sessionEnded"));
+    console.error("❌ Signup-Fehler:", err.message);
+    throw err;
+  }
+}
+
+/**
+ * Logout – entfernt das gespeicherte Session-Token.
+ */
+export function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem("userEmail");
+  window.dispatchEvent(new Event("sessionEnded"));
+  console.log("🚪 Logout durchgeführt");
+}
+
+/**
+ * Liest das aktuelle Session-Token aus oder wirft einen Fehler.
+ * @returns {string} sessionToken
+ * @throws {Error} wenn kein Token vorhanden
+ */
+export function getSessionToken() {
+  const token = localStorage.getItem(SESSION_KEY);
+  if (!token) {
+    console.warn("🚫 Kein Session-Token gefunden");
+    throw new Error("SESSION_EXPIRED");
+  }
   return token;
 }
 
-// 🔐 Login-Funktion
-async function login(email, password) {
-  try {
-    await auth.signInWithEmailAndPassword(email, password);
-    console.log("✅ Successfully logged in:", email);
-  } catch (error) {
-    console.error("❌ Login error:", error.message);
-    throw error;
-  }
+/**
+ * Prüft, ob ein Session-Token gespeichert ist.
+ * @returns {boolean}
+ */
+export function isLoggedIn() {
+  return Boolean(localStorage.getItem(SESSION_KEY));
 }
 
-// 🚪 Logout-Funktion
-async function logout() {
-  try {
-    await auth.signOut();
-    console.log("🚪 Successfully logged out");
-  } catch (error) {
-    console.error("❌ Logout error:", error.message);
-    throw error;
-  }
-}
-
-// 🔄 Auth-State Change Listener
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    console.log("✅ Logged in as:", user.email);
-    // Optional: Update UI (e.g., show "Logout" button)
-  } else {
-    console.log("🚪 No user logged in");
-    // Optional: Update UI (e.g., show "Login" button)
-  }
-});
-
-// ➕ Registrierung
-async function signup(email, password) {
-  try {
-    await auth.createUserWithEmailAndPassword(email, password);
-    console.log("✅ Registrierung erfolgreich:", email);
-  } catch (error) {
-    console.error("❌ Registrierung-Fehler:", error.message);
-    throw error;
-  }
+/**
+ * Entfernt das Session-Token.
+ */
+export function clearSessionToken() {
+  localStorage.removeItem(SESSION_KEY);
+  window.dispatchEvent(new Event("sessionEnded"));
 }

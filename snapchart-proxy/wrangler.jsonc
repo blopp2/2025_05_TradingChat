@@ -6,11 +6,18 @@
 	"observability": {
 		"enabled": true
 	},
-
-	// Environment Variables
+	"kv_namespaces": [
+		{
+			"binding": "SESSION_STORE",
+			"id": "35a113c67c334c5ba31a358299fc471a"
+		}
+	],
 	"vars": {
-		"FIREBASE_PROJECT_ID": "snapchart-21fa7"
+		// Euer Firebase-Projekt
+		"FIREBASE_PROJECT_ID": "snapchart-21fa7",
+		// Start-Kontingent pro User
+		"INITIAL_QUOTA": "10",
+		// Intervall bis zum Reset (in ms): hier 1 Stunde = 60*60*1000 = 3600000
+		"RESET_INTERVAL_MS": "120000"
 	}
-
-	// (Weitere Section-Bindings, Services, Assets etc. nach Bedarf hinzufügen)
 }

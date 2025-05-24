@@ -7,7 +7,8 @@ console.log("🔧 Service‑Worker initialisiert");
 // 1  Konstanten
 // -----------------------------------------------------------------------------
 
-const PROXY_ENDPOINT = "https://snapchart-proxy.brightcompass.workers.dev";
+const PROXY_ENDPOINT =
+  "https://snapchart-proxy.brightcompass.workers.dev/analyze";
 const MAX_HISTORY = 3;
 const chatHistories = new Map(); // key = tabId, value = Array<ChatMessage>
 
@@ -24,12 +25,11 @@ function captureTradingViewChart() {
         if (chrome.runtime.lastError) {
           return reject(
             new Error(
-              `Screenshot fehlgeschlagen: ${chrome.runtime.lastError.message}`
+              `not a valid chart URL: ${chrome.runtime.lastError.message}`
             )
           );
         }
-        if (!dataUrl)
-          return reject(new Error("Keine Screenshot-Daten erhalten"));
+        if (!dataUrl) return reject(new Error("No Data recieved"));
         resolve(dataUrl);
       }
     );
@@ -40,7 +40,7 @@ function captureTradingViewChart() {
 // 3  Kommunikation mit Worker (Proxy)
 // -----------------------------------------------------------------------------
 
-async function queryProxy(tabId, contentFragments, idToken) {
+async function queryProxy(tabId, contentFragments, sessionToken) {
   const hasImage = contentFragments.some((c) => c.type === "image_url");
   const action = hasImage ? "analyze" : "ask";
 
@@ -58,34 +58,50 @@ async function queryProxy(tabId, contentFragments, idToken) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}), // 🛡 Token anhängen wenn vorhanden
+        Authorization: `Bearer ${sessionToken}`,
       },
       body: JSON.stringify(bodyPayload),
-      signal: AbortSignal.timeout(30000),
     });
 
+    // ---- Neuer Code: Session abgelaufen erkennen ----
+    if (res.status === 401) {
+      const errorObj = await res.json().catch(() => ({}));
+      const reason = errorObj?.error || "";
+      if (reason === "SESSION_EXPIRED") {
+        // Spezial-Fehler werfen, damit UI gezielt reagieren kann
+        throw new Error("SESSION_EXPIRED");
+      } else {
+        throw new Error("Nicht autorisiert");
+      }
+    }
+
+    // ---- Sonstige Fehler ----
     if (!res.ok) {
       const errorResponse = await res.text();
       console.error(
-        "❌ Proxy-Fehler: HTTP Status",
+        "❌ Proxy-Error: HTTP Status",
         res.status,
         "-",
         errorResponse
       );
-      throw new Error(`Proxy-Fehler: ${res.status}`);
+      throw new Error(`Proxy-Error: ${res.status}`);
     }
 
     const jsonData = await res.json();
-    console.log("✅ Proxy-Antwort erhalten:", jsonData);
+    console.log("✅ Proxy-Feedback:", jsonData);
 
     if (!jsonData.answer) {
-      throw new Error("Proxy-Antwort leer oder unvollständig.");
+      throw new Error("Proxy-Feedback empty.");
     }
 
     return jsonData.answer;
   } catch (error) {
-    console.error("❌ Proxy-Request fehlgeschlagen:", error.message);
-    throw new Error("Proxy-Anfrage fehlgeschlagen");
+    // ---- SESSION_EXPIRED wird nach außen geworfen, alle anderen als allgemeiner Proxy-Fehler ----
+    if (error.message === "SESSION_EXPIRED") {
+      throw error; // UI kann dann gezielt re-login auslösen
+    }
+    console.error("❌ Proxy-Request failed:", error.message);
+    throw new Error("Proxy-Anfrage failed");
   }
 }
 
@@ -121,8 +137,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
               image_url: { url: screenshotUrl, detail: "high" },
             },
           ],
-          request.idToken
-        ); // <<< idToken übergeben
+          request.sessionToken // 🟢 Jetzt sessionToken statt idToken
+        );
         return { analysis: answer };
       },
 
@@ -132,8 +148,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const answer = await queryProxy(
           tabId,
           [{ type: "text", text }],
-          request.idToken
-        ); // <<< idToken übergeben
+          request.sessionToken // 🟢 ebenfalls hier
+        );
         return { answer };
       },
 
@@ -145,7 +161,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     const fn = handlers[request.action];
     if (!fn) {
-      sendResponse({ error: "Unbekannte Aktion" });
+      sendResponse({ error: "Unknown Action" });
       return false;
     }
 

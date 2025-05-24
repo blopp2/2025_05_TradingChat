@@ -1,18 +1,32 @@
 /* src/styles.css */
+
 body,
 html {
-  width: 320px;
+  width: 420px; /* vorher: 320px */
+  min-width: 320px;
+  max-width: 500px; /* optional: Obergrenze */
   min-height: 340px;
   margin: 0;
   font-family: Arial, sans-serif;
 }
+
+/* Footer- und Usage-Info */
+#usage-info {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555;
+}
+
+/* Container-Padding */
 #app {
   padding: 12px;
 }
+
 h1 {
   font-size: 16px;
   margin: 0 0 10px;
 }
+
 textarea {
   width: 100%;
   height: 80px;
@@ -20,12 +34,22 @@ textarea {
   padding: 6px;
   font-family: inherit;
 }
+
+/* Standard-Button */
 button {
   width: 100%;
   padding: 8px;
   margin-top: 6px;
   cursor: pointer;
 }
+
+/* Ausgegrauter Button (Countdown / disabled) */
+.disabled-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Erinnerungsanzeige */
 pre {
   white-space: pre-wrap;
   word-break: break-word;
@@ -33,24 +57,29 @@ pre {
   padding: 8px;
   border-radius: 4px;
 }
+
 .response {
-  white-space: pre-wrap; /* Erhält Zeilenumbrüche */
+  white-space: pre-wrap; /* Zeilenumbrüche erhalten */
   font-family: Arial, sans-serif;
   line-height: 1.5;
 }
+
 .response strong {
   color: #2e86de;
 }
+
 .response em {
   color: #10ac84;
   font-style: italic;
 }
+
 .response pre {
   background: #f8f9fa;
   padding: 10px;
   border-radius: 5px;
   overflow-x: auto;
 }
+
 .auth-error {
   background: #ffe4e6;
   color: #b91c1c;
