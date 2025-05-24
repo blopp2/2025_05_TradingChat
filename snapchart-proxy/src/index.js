@@ -16,6 +16,25 @@ export default {
 		const RESET_INTERVAL_MS = env.RESET_INTERVAL_MS ? parseInt(env.RESET_INTERVAL_MS, 10) : 24 * 60 * 60 * 1000; // 24h
 
 		// ─── Unauthenticated Endpoints ─────────────────────────────────────
+		if (path === '/feedback') {
+			const auth = request.headers.get('Authorization')?.replace('Bearer ', '');
+			if (!auth) return unauthorized();
+
+			let uid;
+			try {
+				uid = await verifySessionToken(auth, env);
+			} catch {
+				return jsonResponse({ error: 'Invalid session' }, 401);
+			}
+
+			const { text } = await safeJson(request);
+			if (!text) return jsonResponse({ error: 'Missing feedback' }, 400);
+
+			// write to Firestore collection "feedback"
+			const now = new Date().toISOString();
+			await addFeedback(uid, text, now, env);
+			return jsonResponse({ success: true }, 200);
+		}
 
 		if (path === '/login') {
 			const { email, password } = await safeJson(request);

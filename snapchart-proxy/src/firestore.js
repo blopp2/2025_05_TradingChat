@@ -161,3 +161,27 @@ export async function updateUserDoc(uid, updates, env) {
 	}
 	return patchUserDoc(uid, fields, env);
 }
+
+export async function addFeedback(uid, text, timestamp, env) {
+	const PROJECT_ID = env.FIREBASE_PROJECT_ID;
+	const token = await getAccessToken(env);
+	const fields = {
+		uid: { stringValue: uid },
+		text: { stringValue: text },
+		createdAt: { timestampValue: timestamp },
+	};
+	const url = `${FIRESTORE_API}/projects/${PROJECT_ID}/databases/(default)/documents/feedback`;
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${token}`,
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ fields }),
+	});
+	if (!res.ok) {
+		const err = await res.text();
+		throw new Error(`Firestore feedback error ${res.status}: ${err}`);
+	}
+	return res.json();
+}

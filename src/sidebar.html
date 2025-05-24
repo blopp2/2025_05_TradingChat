@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SnapChart - Chart Analyzer</title>
     <link rel="stylesheet" href="sidebar.css" />
+    <link rel="stylesheet" href="feedback.css" />
     <script type="module" src="sidebar.js"></script>
+    <script type="module" src="feedback.js"></script>
   </head>
 
   <body>
@@ -20,7 +22,18 @@
           />
           <span class="app-title">SnapChart - Chart Analyzer</span>
         </div>
-        <button id="logout-btn" class="auth-btn">🚪 Logout</button>
+        <div class="user-container">
+          <span id="user-email" class="user-email"></span>
+          <a
+            id="doc-link"
+            class="doc-link"
+            href="https://snapchart.pages.dev"
+            target="_blank"
+            title="Documentation"
+            >📖</a
+          >
+          <button id="logout-btn" class="auth-btn">🚪 Logout</button>
+        </div>
       </header>
 
       <!-- Main Content -->
@@ -31,7 +44,8 @@
             Analyze this chart
           </button>
           <div id="screenshot-info" class="screenshot-info">
-            📋 Last Screenshot: <span id="screenshot-time">none yet</span>
+            📋 Last Screenshot:
+            <span id="screenshot-time">none yet</span>
           </div>
         </div>
 
@@ -44,6 +58,7 @@
       <!-- Sticky Footer -->
       <footer class="sidebar-footer">
         <button id="donate-btn" class="secondary-btn">🧡☕ Donate</button>
+        <button id="feedback-btn" class="secondary-btn">✉️ Feedback</button>
       </footer>
     </div>
 
@@ -63,15 +78,26 @@
 
         <button id="auth-submit-btn" class="primary-btn">Submit</button>
         <div id="auth-toggle" class="auth-toggle">
-          ➡️ Need an account? <a href="#" id="switch-to-signup">Sign up</a>
+          ➡️ Need an account?
+          <a href="#" id="switch-to-signup">Sign up</a>
         </div>
         <div id="auth-error" class="auth-error"></div>
       </div>
     </div>
 
-    <!-- Status Indicator -->
-    <div id="status" class="status-indicator" style="display: none">
-      ⌛️ Processing...
+    <!-- Feedback Overlay -->
+    <div id="feedback-container" class="feedback-container hidden">
+      <div class="feedback-content">
+        <button id="feedback-close" class="close">&times;</button>
+        <iframe
+          src="feedback.html"
+          title="Send Feedback"
+          class="feedback-iframe"
+        ></iframe>
+      </div>
     </div>
+
+    <!-- Status Indicator -->
+    <div id="status" class="status-indicator hidden">⌛️ Processing...</div>
   </body>
 </html>

@@ -51,6 +51,7 @@ export async function login(email, password) {
       throw new Error("Kein Session-Token erhalten");
     }
     localStorage.setItem(SESSION_KEY, sessionToken);
+    localStorage.setItem("userEmail", email);
     window.dispatchEvent(new Event("sessionStarted"));
     console.log("✅ Login erfolgreich");
   } catch (err) {
@@ -74,6 +75,7 @@ export async function signup(email, password) {
       throw new Error("Kein Session-Token erhalten");
     }
     localStorage.setItem(SESSION_KEY, sessionToken);
+    localStorage.setItem("userEmail", email);
     window.dispatchEvent(new Event("sessionStarted"));
     console.log("✅ Registrierung erfolgreich");
   } catch (err) {
@@ -89,6 +91,7 @@ export async function signup(email, password) {
  */
 export function logout() {
   localStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem("userEmail");
   window.dispatchEvent(new Event("sessionEnded"));
   console.log("🚪 Logout durchgeführt");
 }

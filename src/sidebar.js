@@ -18,6 +18,12 @@ function sendMessage(message) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  // ─── Grab all the elements ────────────────────────────────────────────
+  const userEmailEl = document.getElementById("user-email");
+  const docLinkEl = document.getElementById("doc-link");
+  const feedbackBtn = document.getElementById("feedback-btn");
+  const feedbackModal = document.getElementById("feedback-modal");
+  const feedbackClose = document.getElementById("feedback-close");
   const newAnalysisBtn = document.getElementById("new-analysis-btn");
   const screenshotInfo = document.getElementById("screenshot-info");
   const resultEl = document.getElementById("result");
@@ -27,65 +33,89 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let countdownInterval = null;
 
-  // Initial UI & Usage laden
+  // ─── Initialization ─────────────────────────────────────────────────
   updateAuthUI();
+  updateUserUI();
   loadUsage();
 
-  document.addEventListener("sessionStarted", () => {
+  // After login/signup
+  window.addEventListener("sessionStarted", () => {
     closeLoginModal();
     updateAuthUI();
+    updateUserUI();
     loadUsage();
   });
 
+  // ─── Logout ─────────────────────────────────────────────────────────
   logoutBtn.addEventListener("click", () => {
     logout();
     openLoginModal();
     updateAuthUI();
+    updateUserUI();
   });
 
+  // ─── Analyze Button ─────────────────────────────────────────────────
   newAnalysisBtn.addEventListener("click", async () => {
     newAnalysisBtn.disabled = true;
-    updateStatus("Analyzing...");
-    // Nur hier löschen, nicht in loadUsage
+    updateStatus("Analyzing…");
     resultEl.innerHTML = "";
-
     try {
       const token = getSessionToken();
-      const response = await sendMessage({
+      const resp = await sendMessage({
         action: "analyzeChart",
         sessionToken: token,
       });
 
-      if (response?.sessionExpired || response?.error === "SESSION_EXPIRED") {
-        showSessionExpired();
-        return;
+      if (resp?.sessionExpired || resp?.error === "SESSION_EXPIRED") {
+        return showSessionExpired();
       }
-
-      if (response?.analysis) {
-        resultEl.innerHTML = formatResponse(response.analysis);
+      if (resp.analysis) {
+        resultEl.innerHTML = formatResponse(resp.analysis);
         updateScreenshotTime();
-      } else if (response?.error?.includes("limit reached")) {
+      } else if (resp.error?.includes("limit reached")) {
         showError("❌ You've used all your free analyses.");
-      } else if (response?.error) {
-        showError(response.error);
       } else {
-        showError("Unknown error");
+        showError(resp.error || "Unknown error");
       }
     } catch (err) {
-      if (err?.message === "SESSION_EXPIRED") {
-        showSessionExpired();
-        return;
+      if (err.message === "SESSION_EXPIRED") {
+        return showSessionExpired();
       }
-      showError(err.message || "Proxy-Anfrage fehlgeschlagen");
+      showError(err.message || "Proxy request failed");
     } finally {
       clearStatus();
-      await loadUsage(); // Button-Text updaten
+      await loadUsage();
     }
   });
 
+  // ─── Donate Button ──────────────────────────────────────────────────
   donateBtn.addEventListener("click", showDonateDialog);
 
-  // ─── Funktionen ───────────────────────────────────────────────────
+  // ─── Feedback Button opens in-page modal ────────────────────────────
+  feedbackBtn.addEventListener("click", () => {
+    if (!isLoggedIn()) {
+      return alert("Please log in to send feedback.");
+    }
+    feedbackModal.classList.remove("hidden");
+  });
+  feedbackClose.addEventListener("click", () => {
+    feedbackModal.classList.add("hidden");
+  });
+
+  // ─── Helpers ────────────────────────────────────────────────────────
+  function updateUserUI() {
+    const email = localStorage.getItem("userEmail");
+    if (email) {
+      userEmailEl.textContent = email;
+      userEmailEl.style.display = "inline";
+      docLinkEl.style.display = "inline";
+      feedbackBtn.style.display = "inline-block";
+    } else {
+      userEmailEl.style.display = "none";
+      docLinkEl.style.display = "none";
+      feedbackBtn.style.display = "none";
+    }
+  }
 
   function updateAuthUI() {
     if (!isLoggedIn()) {
@@ -101,11 +131,11 @@ window.addEventListener("DOMContentLoaded", () => {
     logout();
     openLoginModal();
     updateAuthUI();
+    updateUserUI();
   }
 
   function updateScreenshotTime() {
-    const now = new Date();
-    screenshotInfo.textContent = `📋 Last Screenshot: ${now.toLocaleString()}`;
+    screenshotInfo.textContent = `📋 Last Screenshot: ${new Date().toLocaleString()}`;
   }
 
   function updateStatus(msg) {
@@ -138,14 +168,10 @@ window.addEventListener("DOMContentLoaded", () => {
     window.open("https://buymeacoffee.com/brightcompass", "_blank");
   }
 
-  /**
-   * Live-Countdown im Button starten (grau, disabled)
-   */
   function startButtonCountdown(waitMs) {
     clearInterval(countdownInterval);
     let remaining = waitMs;
     newAnalysisBtn.disabled = true;
-
     countdownInterval = setInterval(() => {
       remaining -= 1000;
       if (remaining <= 0) {
@@ -153,9 +179,9 @@ window.addEventListener("DOMContentLoaded", () => {
         resetAnalysisButton();
         loadUsage();
       } else {
-        const mins = Math.floor(remaining / 60000);
-        const secs = Math.floor((remaining % 60000) / 1000);
-        newAnalysisBtn.textContent = `Next in ${mins}m ${secs}s`;
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        newAnalysisBtn.textContent = `Next in ${m}m ${s}s`;
       }
     }, 1000);
   }
@@ -165,12 +191,8 @@ window.addEventListener("DOMContentLoaded", () => {
     newAnalysisBtn.textContent = "Analyze this chart";
   }
 
-  /**
-   * Lädt Usage und aktualisiert den Button-Text oder startet den Countdown
-   */
   async function loadUsage() {
     clearStatus();
-    // Button in Lade-Zustand
     newAnalysisBtn.disabled = true;
     newAnalysisBtn.textContent = "Loading…";
 
@@ -188,10 +210,9 @@ window.addEventListener("DOMContentLoaded", () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!res.ok) throw new Error("Failed to fetch usage");
+      if (!res.ok) throw new Error();
 
       const { analysesRemaining, waitMs } = await res.json();
-
       if (analysesRemaining > 0) {
         newAnalysisBtn.disabled = false;
         newAnalysisBtn.textContent = `Analyze this chart (${analysesRemaining} left)`;
@@ -199,7 +220,6 @@ window.addEventListener("DOMContentLoaded", () => {
         startButtonCountdown(waitMs);
       }
     } catch {
-      // Fallback
       newAnalysisBtn.disabled = false;
       newAnalysisBtn.textContent = "Analyze this chart";
     }
