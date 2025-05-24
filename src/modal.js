@@ -1,10 +1,14 @@
 // modal.js – Steuerung für Auth-Modal (Login + Session Token)
-import { login, signup, getSessionToken } from "./auth.js";
+
+import { login, signup } from "./auth.js";
 
 let authModal, authModalClose, authModalTitle;
 let authEmail, authPassword, authSubmitBtn, authError, authToggle;
 let mode = "login"; // 'login' oder 'signup'
 
+/**
+ * Öffnet das Modal im Login-Modus.
+ */
 export function openLoginModal() {
   mode = "login";
   if (!authModal) setupModal();
@@ -12,7 +16,17 @@ export function openLoginModal() {
   authModal.classList.remove("hidden");
 }
 
-// Initialisiere das Modal erst beim ersten Aufruf
+/**
+ * Schließt das Modal.
+ */
+export function closeLoginModal() {
+  if (!authModal) setupModal();
+  authModal.classList.add("hidden");
+}
+
+/**
+ * Initialisiert das Modal (DOM-Referenzen, Event-Handler).
+ */
 function setupModal() {
   authModal = document.getElementById("auth-modal");
   authModalClose = document.getElementById("auth-modal-close");
@@ -23,46 +37,61 @@ function setupModal() {
   authError = document.getElementById("auth-error");
   authToggle = document.getElementById("auth-toggle");
 
-  authModalClose.addEventListener("click", () => {
-    authModal.classList.add("hidden");
-  });
-
-  authSubmitBtn.addEventListener("click", async () => {
-    const email = authEmail.value.trim();
-    const password = authPassword.value.trim();
-
-    if (!email || !password) {
-      authError.textContent = "❌ Please fill out all fields.";
-      return;
-    }
-
-    try {
-      if (mode === "login") {
-        await login(email, password);
-      } else {
-        await signup(email, password);
-      }
-
-      getSessionToken(); // Token validieren
-      authModal.classList.add("hidden");
-    } catch (error) {
-      console.error("Auth Error:", error.message);
-      authError.textContent =
-        "❌ " + (error.message || "Authentication failed.");
-    }
-  });
-
-  authToggle.addEventListener("click", (event) => {
-    if (event.target.id === "switch-to-signup") {
-      mode = "signup";
-      resetModal();
-    } else if (event.target.id === "switch-to-login") {
-      mode = "login";
-      resetModal();
-    }
-  });
+  authModalClose.addEventListener("click", closeLoginModal);
+  authSubmitBtn.addEventListener("click", handleAuthSubmit);
+  authToggle.addEventListener("click", handleAuthToggle);
 }
 
+/**
+ * Klick-Handler für den Submit-Button (Login oder Signup).
+ */
+async function handleAuthSubmit() {
+  const email = authEmail.value.trim();
+  const password = authPassword.value.trim();
+
+  if (!email || !password) {
+    authError.textContent = "❌ Please fill out all fields.";
+    return;
+  }
+
+  authSubmitBtn.disabled = true;
+  authError.textContent = "";
+
+  try {
+    if (mode === "login") {
+      await login(email, password);
+    } else {
+      await signup(email, password);
+    }
+
+    // Sobald erfolgreich: Modal schließen und UI benachrichtigen
+    closeLoginModal();
+    window.dispatchEvent(new Event("sessionStarted"));
+  } catch (err) {
+    console.error("Auth Error:", err.message);
+    authError.textContent = "❌ " + (err.message || "Authentication failed.");
+  } finally {
+    authSubmitBtn.disabled = false;
+  }
+}
+
+/**
+ * Klick-Handler für den Link, um zwischen Login und Signup zu wechseln.
+ */
+function handleAuthToggle(event) {
+  const targetId = event.target.id;
+  if (targetId === "switch-to-signup") {
+    mode = "signup";
+    resetModal();
+  } else if (targetId === "switch-to-login") {
+    mode = "login";
+    resetModal();
+  }
+}
+
+/**
+ * Setzt das Modal zurück auf den aktuellen Modus (Login oder Signup).
+ */
 function resetModal() {
   authEmail.value = "";
   authPassword.value = "";

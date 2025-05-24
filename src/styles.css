@@ -8,6 +8,11 @@ html {
   margin: 0;
   font-family: Arial, sans-serif;
 }
+#usage-info {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #555;
+}
 #app {
   padding: 12px;
 }
